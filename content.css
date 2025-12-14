@@ -1,1 +1,7 @@
-/* content.css: Styles injected into the YouTube page */
+#chat-begone-box {
+    position: absolute;
+    background-color: #1E2332;
+    z-index: 50;
+    /* Above video, below controls */
+    cursor: move;
+}
