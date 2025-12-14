@@ -139,7 +139,9 @@ function ensureBox() {
         }
 
         function onMouseUp() {
-            browser.storage.local.set({ chatBegoneConfig: config });
+            browser.storage.local.set({ chatBegoneConfig: config }).catch((err) => {
+                console.error("Chat Begone: Failed to save config:", err);
+            });
 
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
@@ -155,6 +157,7 @@ function ensureBox() {
             // Prevent text selection/default behavior
             e.preventDefault();
 
+            // Attach listeners only during drag
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mouseup', onMouseUp);
         });
