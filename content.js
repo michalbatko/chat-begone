@@ -20,7 +20,7 @@ browser.runtime.onMessage.addListener((message) => {
         if (!isEnabled) {
             cleanup();
         } else {
-            ensureBox();
+            startWatchdog();
         }
     }
 });
@@ -32,7 +32,11 @@ browser.storage.local.get(["chatBegoneEnabled", "chatBegoneConfig"]).then((store
         config = stored.chatBegoneConfig;
     }
 
-    if (!isEnabled) cleanup();
+    if (!isEnabled) {
+        cleanup();
+    } else {
+        startWatchdog();
+    }
 });
 
 function updateBoxPosition() {
@@ -71,6 +75,8 @@ function updateBoxPosition() {
 }
 
 function cleanup() {
+    stopWatchdog();
+
     if (resizeObserver) resizeObserver.disconnect();
     resizeObserver = null;
 
@@ -171,12 +177,25 @@ function ensureBox() {
     updateBoxPosition();
 }
 
-// Watchdog every 1.5 seconds
-// Handles initial load, navigation, and random YouTube DOM replacements
-setInterval(ensureBox, 1500);
+let watchdogInterval = null;
 
-// Listen to window resize as a fallback trigger
-window.addEventListener('resize', () => updateBoxPosition());
+function startWatchdog() {
+    if (watchdogInterval) return;
+    ensureBox();
+    watchdogInterval = setInterval(ensureBox, 1500);
+}
 
-// Run immediately
-ensureBox();
+function stopWatchdog() {
+    if (watchdogInterval) {
+        clearInterval(watchdogInterval);
+        watchdogInterval = null;
+    }
+}
+
+window.addEventListener('resize', () => {
+    if (isEnabled) updateBoxPosition();
+});
+
+if (isEnabled) {
+    startWatchdog();
+}
