@@ -129,11 +129,11 @@ function ensureBox() {
             const deltaX = e.clientX - dragStartX;
             const deltaY = e.clientY - dragStartY;
 
-            const deltaPrecentW = (deltaX / vidRect.width) * 100;
-            const deltaPrecentH = (deltaY / vidRect.height) * 100;
+            const deltaPercentW = (deltaX / vidRect.width) * 100;
+            const deltaPercentH = (deltaY / vidRect.height) * 100;
 
-            config.left = startLeft + deltaPrecentW;
-            config.top = startTop + deltaPrecentH;
+            config.left = startLeft + deltaPercentW;
+            config.top = startTop + deltaPercentH;
 
             updateBoxPosition();
         }
