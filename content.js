@@ -132,8 +132,8 @@ function ensureBox() {
             const deltaPercentW = (deltaX / vidRect.width) * 100;
             const deltaPercentH = (deltaY / vidRect.height) * 100;
 
-            config.left = startLeft + deltaPercentW;
-            config.top = startTop + deltaPercentH;
+            config.left = Math.max(0, Math.min(startLeft + deltaPercentW, 100 - config.width));
+            config.top = Math.max(0, Math.min(startTop + deltaPercentH, 100 - config.height));
 
             updateBoxPosition();
         }
