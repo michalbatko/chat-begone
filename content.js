@@ -37,6 +37,8 @@ browser.storage.local.get(["chatBegoneEnabled", "chatBegoneConfig"]).then((store
     } else {
         startWatchdog();
     }
+}).catch((err) => {
+    console.error("Chat Begone: Error loading settings:", err);
 });
 
 function updateBoxPosition() {
