@@ -117,24 +117,11 @@ function ensureBox() {
         playerElement.appendChild(box);
         boxElement = box;
 
-        let isDragging = false;
         let dragStartX, dragStartY;
         let startLeft, startTop;
 
-        box.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-
-            startLeft = config.left;
-            startTop = config.top;
-
-            // Prevent text selection/default behavior
-            e.preventDefault();
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging || !videoElement) return;
+        function onMouseMove(e) {
+            if (!videoElement) return;
 
             const vidRect = videoElement.getBoundingClientRect();
             if (vidRect.width === 0 || vidRect.height === 0) return;
@@ -149,13 +136,27 @@ function ensureBox() {
             config.top = startTop + deltaPrecentH;
 
             updateBoxPosition();
-        });
+        }
 
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                browser.storage.local.set({ chatBegoneConfig: config });
-            }
+        function onMouseUp() {
+            browser.storage.local.set({ chatBegoneConfig: config });
+
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        }
+
+        box.addEventListener('mousedown', (e) => {
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+
+            startLeft = config.left;
+            startTop = config.top;
+
+            // Prevent text selection/default behavior
+            e.preventDefault();
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
         });
 
         // Re-attach observer whenever we create the box
