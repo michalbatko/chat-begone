@@ -199,7 +199,3 @@ function stopWatchdog() {
 window.addEventListener('resize', () => {
     if (isEnabled) updateBoxPosition();
 });
-
-if (isEnabled) {
-    startWatchdog();
-}
