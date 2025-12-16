@@ -32,9 +32,7 @@ browser.storage.local.get(["chatBegoneEnabled", "chatBegoneConfig"]).then((store
         config = stored.chatBegoneConfig;
     }
 
-    if (!isEnabled) {
-        cleanup();
-    } else {
+    if (isEnabled) {
         startWatchdog();
     }
 }).catch((err) => {
