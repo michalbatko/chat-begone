@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    function updateUI(active) {
-        if (active) {
+    function updateUI(isEnabled) {
+        if (isEnabled) {
             statusText.textContent = "Active";
             statusText.style.color = "green";
             toggleBtn.textContent = "Turn OFF";
