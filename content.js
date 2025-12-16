@@ -101,8 +101,8 @@ function ensureBox() {
     if (!newPlayer || !newVideo) return;
 
     // Check if we migrated to a new video player instance (YouTube SPA Nav)
-    if (playerElement && playerElement !== newPlayer) {
-        // Old box likely inside the old player, so reset
+    if ((playerElement && playerElement !== newPlayer) ||
+        (videoElement && videoElement !== newVideo)) {
         cleanup();
     }
 
