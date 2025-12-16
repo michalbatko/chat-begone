@@ -76,6 +76,7 @@ function updateBoxPosition() {
 
 function cleanup() {
     stopWatchdog();
+    if (typeof cleanupDragListeners === 'function') cleanupDragListeners();
 
     if (resizeObserver) resizeObserver.disconnect();
     resizeObserver = null;
@@ -89,6 +90,44 @@ function cleanup() {
     }
 
     boxElement = null;
+    cleanupDragListeners();
+}
+
+// --- Drag Logic ---
+let dragStartX, dragStartY;
+let startLeft, startTop;
+
+function onMouseMove(e) {
+    if (!videoElement) return;
+
+    const vidRect = videoElement.getBoundingClientRect();
+    if (vidRect.width === 0 || vidRect.height === 0) return;
+
+    const deltaX = e.clientX - dragStartX;
+    const deltaY = e.clientY - dragStartY;
+
+    const deltaPercentW = (deltaX / vidRect.width) * 100;
+    const deltaPercentH = (deltaY / vidRect.height) * 100;
+
+    // Boundary Checks (Clamp)
+    // Strict: Box stays fully within the video player.
+    config.left = Math.max(0, Math.min(startLeft + deltaPercentW, 100 - config.width));
+    config.top = Math.max(0, Math.min(startTop + deltaPercentH, 100 - config.height));
+
+    updateBoxPosition();
+}
+
+function onMouseUp() {
+    browser.storage.local.set({ chatBegoneConfig: config }).catch((err) => {
+        console.error("Chat Begone: Failed to save config:", err);
+    });
+
+    cleanupDragListeners();
+}
+
+function cleanupDragListeners() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
 }
 
 function ensureBox() {
@@ -116,36 +155,6 @@ function ensureBox() {
         box.id = "chat-begone-box";
         playerElement.appendChild(box);
         boxElement = box;
-
-        let dragStartX, dragStartY;
-        let startLeft, startTop;
-
-        function onMouseMove(e) {
-            if (!videoElement) return;
-
-            const vidRect = videoElement.getBoundingClientRect();
-            if (vidRect.width === 0 || vidRect.height === 0) return;
-
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-
-            const deltaPercentW = (deltaX / vidRect.width) * 100;
-            const deltaPercentH = (deltaY / vidRect.height) * 100;
-
-            config.left = Math.max(0, Math.min(startLeft + deltaPercentW, 100 - config.width));
-            config.top = Math.max(0, Math.min(startTop + deltaPercentH, 100 - config.height));
-
-            updateBoxPosition();
-        }
-
-        function onMouseUp() {
-            browser.storage.local.set({ chatBegoneConfig: config }).catch((err) => {
-                console.error("Chat Begone: Failed to save config:", err);
-            });
-
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        }
 
         box.addEventListener('mousedown', (e) => {
             dragStartX = e.clientX;
