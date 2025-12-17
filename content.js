@@ -127,7 +127,6 @@ function cleanup() {
     }
 
     boxElement = null;
-    cleanupDragListeners();
 }
 
 
