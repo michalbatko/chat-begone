@@ -74,25 +74,6 @@ function updateBoxPosition() {
     boxElement.style.display = 'block';
 }
 
-function cleanup() {
-    stopWatchdog();
-    if (typeof cleanupDragListeners === 'function') cleanupDragListeners();
-
-    if (resizeObserver) resizeObserver.disconnect();
-    resizeObserver = null;
-
-    if (boxElement) {
-        boxElement.remove();
-    } else {
-        // Fallback in case reference was lost but element persists
-        const existing = document.getElementById("chat-begone-box");
-        if (existing) existing.remove();
-    }
-
-    boxElement = null;
-    cleanupDragListeners();
-}
-
 // --- Drag Logic ---
 let dragStartX, dragStartY;
 let startLeft, startTop;
@@ -129,6 +110,27 @@ function cleanupDragListeners() {
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
 }
+
+function cleanup() {
+    stopWatchdog();
+    cleanupDragListeners();
+
+    if (resizeObserver) resizeObserver.disconnect();
+    resizeObserver = null;
+
+    if (boxElement) {
+        boxElement.remove();
+    } else {
+        // Fallback in case reference was lost but element persists
+        const existing = document.getElementById("chat-begone-box");
+        if (existing) existing.remove();
+    }
+
+    boxElement = null;
+    cleanupDragListeners();
+}
+
+
 
 function ensureBox() {
     if (!isEnabled) return;
