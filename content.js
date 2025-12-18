@@ -26,7 +26,7 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 browser.storage.local.get(["chatBegoneEnabled", "chatBegoneConfig"]).then((stored) => {
-    isEnabled = stored.chatBegoneEnabled !== false;
+    isEnabled = stored.chatBegoneEnabled === true;
 
     if (stored.chatBegoneConfig) {
         config = stored.chatBegoneConfig;
