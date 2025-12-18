@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusText = document.getElementById('status-text');
     const toggleBtn = document.getElementById('toggle-btn');
 
-    // 1. Load saved state (default to true/active)
+    // 1. Load saved state (default to false/inactive)
     const stored = await browser.storage.local.get("chatBegoneEnabled");
-    let isEnabled = stored.chatBegoneEnabled !== false; // Default true
+    let isEnabled = stored.chatBegoneEnabled === true; // Default false
 
     updateUI(isEnabled);
 
