@@ -1,6 +1,49 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const statusText = document.getElementById('status-text');
     const toggleBtn = document.getElementById('toggle-btn');
+    const channelText = document.getElementById('channel-text');
+
+    async function getChannelId() {
+        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+        const tab = tabs[0];
+
+        if (!tab?.url?.includes('youtube.com')) {
+            return null;
+        }
+
+        try {
+            const results = await browser.tabs.executeScript(tab.id, {
+                code: `
+                    (function() {
+                        const channelLink = document.querySelector('ytd-channel-name a');
+                        if (channelLink?.href) {
+                            const match = channelLink.href.match(/\\/(channel|c|user|@)\\/([^/?]+)/);
+                            if (match) return match[2];
+                        }
+                        
+                        const metaTag = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
+                        if (metaTag?.href) {
+                            const match = metaTag.href.match(/\\/(channel|c|user|@)\\/([^/?]+)/);
+                            if (match) return match[2];
+                        }
+                        
+                        return null;
+                    })();
+                `
+            });
+            return results?.[0] || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    const channelId = await getChannelId();
+    if (channelId) {
+        channelText.textContent = channelId;
+    } else {
+        channelText.textContent = 'Not detected';
+        channelText.style.color = 'gray';
+    }
 
     // 1. Load saved state (default to false/inactive)
     const stored = await browser.storage.local.get("chatBegoneEnabled");
