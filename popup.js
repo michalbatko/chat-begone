@@ -32,26 +32,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const results = await browser.tabs.executeScript(tab.id, {
-                code: `
-                    (function() {
-                        const channelLink = document.querySelector('ytd-channel-name a');
-                        if (channelLink?.href) {
-                            const match = channelLink.href.match(/\\/(channel|c|user|@)\\/([^/?]+)/);
-                            if (match) return match[2];
-                        }
-                        
-                        const metaTag = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
-                        if (metaTag?.href) {
-                            const match = metaTag.href.match(/\\/(channel|c|user|@)\\/([^/?]+)/);
-                            if (match) return match[2];
-                        }
-                        
-                        return null;
-                    })();
-                `
+            const results = await browser.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => {
+                    const channelLink = document.querySelector('ytd-channel-name a');
+                    if (channelLink?.href) {
+                        const match = channelLink.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
+                        if (match) return match[2];
+                    }
+                    const metaTag = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
+                    if (metaTag?.href) {
+                        const match = metaTag.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
+                        if (match) return match[2];
+                    }
+                    return null;
+                }
             });
-            return results?.[0] || null;
+            return results?.[0]?.result ?? null;
         } catch (e) {
             return null;
         }
