@@ -7,7 +7,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tabs = await browser.tabs.query({ active: true, currentWindow: true });
         const tab = tabs[0];
 
-        if (!tab?.url?.includes('youtube.com')) {
+        if (!tab || !tab.url) {
+            return null;
+        }
+
+        let hostname;
+        try {
+            const parsedUrl = new URL(tab.url);
+            hostname = parsedUrl.hostname;
+        } catch (e) {
+            return null;
+        }
+
+        const allowedHosts = [
+            'www.youtube.com',
+            'youtube.com',
+            'm.youtube.com',
+            'music.youtube.com',
+            'studio.youtube.com'
+        ];
+
+        if (!allowedHosts.includes(hostname)) {
             return null;
         }
 
