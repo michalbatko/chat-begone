@@ -5,7 +5,8 @@
     "description": "Hides embedded Twitch chat overlays in YouTube VODs.",
     "permissions": [
         "storage",
-        "activeTab"
+        "activeTab",
+        "scripting"
     ],
     "content_scripts": [
         {
