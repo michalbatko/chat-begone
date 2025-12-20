@@ -32,24 +32,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
+            console.log('Attempting to detect channel...');
             const results = await browser.scripting.executeScript({
                 target: { tabId: tab.id },
                 func: () => {
+                    console.log('Chat Begone: Starting channel detection...');
+
+                    // Helper to extract ID from URL
+                    const extractId = (url) => {
+                        console.log('Chat Begone: Checking URL:', url);
+                        if (!url) return null;
+
+                        // Regex explanation:
+                        // 1. \/ Match leading slash
+                        // 2. (channel\/|c\/|user\/|@) Match path prefix (with trailing slash for paths, or @ for handles)
+                        // 3. ([^/?]+) Match the ID part (stop at / or ?)
+                        const match = url.match(/\/(channel\/|c\/|user\/|@)([^/?]+)/);
+                        const result = match ? match[2] : null;
+                        if (result) console.log('Chat Begone: Extracted ID:', result);
+                        return result;
+                    };
+
+                    // Strategy 1: Video Owner Renderer (Standard Watch Page)
+                    const ownerLink = document.querySelector('ytd-video-owner-renderer ytd-channel-name a');
+                    if (ownerLink?.href) {
+                        console.log('Chat Begone: Found owner link strategy');
+                        const id = extractId(ownerLink.href);
+                        if (id) return id;
+                    }
+
+                    // Strategy 2: Any Channel Name Link (Fallback)
                     const channelLink = document.querySelector('ytd-channel-name a');
                     if (channelLink?.href) {
-                        const match = channelLink.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
-                        if (match) return match[2];
+                        console.log('Chat Begone: Found generic channel link strategy');
+                        const id = extractId(channelLink.href);
+                        if (id) return id;
                     }
-                    const metaTag = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
-                    if (metaTag?.href) {
-                        const match = metaTag.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
-                        if (match) return match[2];
+
+                    // Strategy 3: Meta tags
+                    const metaUrl = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
+                    if (metaUrl?.href) {
+                        console.log('Chat Begone: Found meta tag strategy');
+                        const id = extractId(metaUrl.href);
+                        if (id) return id;
                     }
+
+                    // Strategy 4: Channel Page URL (if we are on a channel page)
+                    if (window.location.href.match(/\/(channel|c|user|@)\//)) {
+                        console.log('Chat Begone: Found URL strategy');
+                        const id = extractId(window.location.href);
+                        if (id) return id;
+                    }
+
+                    console.log('Chat Begone: All strategies failed');
                     return null;
                 }
             });
-            return results?.[0]?.result ?? null;
+
+            const result = results?.[0]?.result ?? null;
+            console.log('Channel ID detected:', result);
+            return result;
         } catch (e) {
+            console.error('Channel detection error:', e);
             return null;
         }
     }
