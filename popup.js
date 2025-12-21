@@ -53,38 +53,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return result;
                     };
 
-                    // Strategy 1: Video Owner Renderer (Standard Watch Page)
                     const ownerLink = document.querySelector('ytd-video-owner-renderer ytd-channel-name a');
                     if (ownerLink?.href) {
-                        console.log('Chat Begone: Found owner link strategy');
                         const id = extractId(ownerLink.href);
-                        if (id) return id;
+                        if (id) {
+                            console.log('Chat Begone: Found owner link strategy with ID:', id);
+                            return id;
+                        }
                     }
 
-                    // Strategy 2: Any Channel Name Link (Fallback)
-                    const channelLink = document.querySelector('ytd-channel-name a');
-                    if (channelLink?.href) {
-                        console.log('Chat Begone: Found generic channel link strategy');
-                        const id = extractId(channelLink.href);
-                        if (id) return id;
-                    }
-
-                    // Strategy 3: Meta tags
-                    const metaUrl = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
-                    if (metaUrl?.href) {
-                        console.log('Chat Begone: Found meta tag strategy');
-                        const id = extractId(metaUrl.href);
-                        if (id) return id;
-                    }
-
-                    // Strategy 4: Channel Page URL (if we are on a channel page)
-                    if (window.location.href.match(/\/(channel|c|user|@)\//)) {
-                        console.log('Chat Begone: Found URL strategy');
-                        const id = extractId(window.location.href);
-                        if (id) return id;
-                    }
-
-                    console.log('Chat Begone: All strategies failed');
+                    console.log('Chat Begone: Owner link strategy failed');
                     return null;
                 }
             });
