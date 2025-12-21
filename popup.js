@@ -53,38 +53,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return result;
                     };
 
-                    // Strategy 1: Video Owner Renderer (Standard Watch Page)
                     const ownerLink = document.querySelector('ytd-video-owner-renderer ytd-channel-name a');
                     if (ownerLink?.href) {
-                        console.log('Chat Begone: Found owner link strategy');
                         const id = extractId(ownerLink.href);
-                        if (id) return id;
+                        if (id) {
+                            console.log('Chat Begone: Found owner link strategy with ID:', id);
+                            return id;
+                        }
                     }
 
-                    // Strategy 2: Any Channel Name Link (Fallback)
-                    const channelLink = document.querySelector('ytd-channel-name a');
-                    if (channelLink?.href) {
-                        console.log('Chat Begone: Found generic channel link strategy');
-                        const id = extractId(channelLink.href);
-                        if (id) return id;
-                    }
-
-                    // Strategy 3: Meta tags
-                    const metaUrl = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
-                    if (metaUrl?.href) {
-                        console.log('Chat Begone: Found meta tag strategy');
-                        const id = extractId(metaUrl.href);
-                        if (id) return id;
-                    }
-
-                    // Strategy 4: Channel Page URL (if we are on a channel page)
-                    if (window.location.href.match(/\/(channel|c|user|@)\//)) {
-                        console.log('Chat Begone: Found URL strategy');
-                        const id = extractId(window.location.href);
-                        if (id) return id;
-                    }
-
-                    console.log('Chat Begone: All strategies failed');
+                    console.log('Chat Begone: Owner link strategy failed');
                     return null;
                 }
             });
@@ -106,20 +84,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         channelText.style.color = 'gray';
     }
 
-    // 1. Load saved state (default to false/inactive)
     const stored = await browser.storage.local.get("chatBegoneEnabled");
-    let isEnabled = stored.chatBegoneEnabled === true; // Default false
+    let isEnabled = stored.chatBegoneEnabled === true;
 
     updateUI(isEnabled);
 
-    // 2. Button Click Handler
     toggleBtn.addEventListener('click', async () => {
         isEnabled = !isEnabled;
 
-        // Save to storage
         await browser.storage.local.set({ chatBegoneEnabled: isEnabled });
 
-        // Update UI
         updateUI(isEnabled);
 
         // Notify content script
@@ -148,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusText.textContent = "Inactive";
             statusText.style.color = "red";
             toggleBtn.textContent = "Turn ON";
-            toggleBtn.classList.add("inactive"); // Makes it green (Turn ON)
+            toggleBtn.classList.add("inactive");
         }
     }
 });

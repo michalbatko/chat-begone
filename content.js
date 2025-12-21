@@ -74,7 +74,6 @@ function updateBoxPosition() {
     boxElement.style.display = 'block';
 }
 
-// --- Drag Logic ---
 let dragStartX, dragStartY;
 let startLeft, startTop;
 
@@ -129,8 +128,6 @@ function cleanup() {
     boxElement = null;
 }
 
-
-
 function ensureBox() {
     if (!isEnabled) return;
 
@@ -149,7 +146,6 @@ function ensureBox() {
     playerElement = newPlayer;
     videoElement = newVideo;
 
-    // Ensure box exists
     let box = document.getElementById("chat-begone-box");
     if (!box) {
         box = document.createElement("div");
