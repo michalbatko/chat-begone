@@ -106,20 +106,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         channelText.style.color = 'gray';
     }
 
-    // 1. Load saved state (default to false/inactive)
     const stored = await browser.storage.local.get("chatBegoneEnabled");
-    let isEnabled = stored.chatBegoneEnabled === true; // Default false
+    let isEnabled = stored.chatBegoneEnabled === true;
 
     updateUI(isEnabled);
 
-    // 2. Button Click Handler
     toggleBtn.addEventListener('click', async () => {
         isEnabled = !isEnabled;
 
-        // Save to storage
         await browser.storage.local.set({ chatBegoneEnabled: isEnabled });
 
-        // Update UI
         updateUI(isEnabled);
 
         // Notify content script
@@ -148,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusText.textContent = "Inactive";
             statusText.style.color = "red";
             toggleBtn.textContent = "Turn ON";
-            toggleBtn.classList.add("inactive"); // Makes it green (Turn ON)
+            toggleBtn.classList.add("inactive");
         }
     }
 });
