@@ -84,15 +84,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         channelText.style.color = 'gray';
     }
 
-    const stored = await browser.storage.local.get("chatBegoneEnabled");
-    let isEnabled = stored.chatBegoneEnabled === true;
+    // Load saved state per channel
+    let isEnabled = false;
+
+    if (channelId) {
+        const stored = await browser.storage.local.get("chatBegoneChannels");
+        const channels = stored.chatBegoneChannels || {};
+        // If channel is in storage, it is enabled
+        isEnabled = !!channels[channelId];
+    }
 
     updateUI(isEnabled);
 
+    // Disable toggle if no channel detected (cannot save state for unknown channel)
+    if (!channelId) {
+        toggleBtn.disabled = true;
+        toggleBtn.classList.add('disabled'); // Ensure CSS exists for disabled look or just browser default
+        statusText.textContent = "Unknown Channel";
+        statusText.style.color = "gray";
+    }
+
     toggleBtn.addEventListener('click', async () => {
+        if (!channelId) return;
+
         isEnabled = !isEnabled;
 
-        await browser.storage.local.set({ chatBegoneEnabled: isEnabled });
+        // Channel Allowlist Logic:
+        // Enabled -> Add to storage
+        // Disabled -> Remove from storage
+        const stored = await browser.storage.local.get("chatBegoneChannels");
+        const channels = stored.chatBegoneChannels || {};
+
+        if (isEnabled) {
+            channels[channelId] = {
+                enabled: true,
+                timestamp: Date.now() // Good metadata to have
+            };
+        } else {
+            delete channels[channelId];
+        }
+
+        await browser.storage.local.set({ chatBegoneChannels: channels });
 
         updateUI(isEnabled);
 
@@ -104,10 +136,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await browser.tabs.sendMessage(tab.id, {
                     action: "toggleState",
+                    channelId: channelId,
                     isEnabled: isEnabled
                 });
             } catch (e) {
-                // Ignore errors (e.g. user toggles on a non-YouTube tab)
+                // Ignore errors
             }
         }
     });
