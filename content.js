@@ -14,30 +14,78 @@ let config = {
 
 let isEnabled = true;
 
-browser.runtime.onMessage.addListener((message) => {
-    if (message.action === "toggleState") {
-        isEnabled = message.isEnabled;
-        if (!isEnabled) {
-            cleanup();
-        } else {
-            startWatchdog();
-        }
+// Channel ID state
+let currentChannelId = null;
+
+function getCurrentChannelId() {
+    const channelLinkElement = document.querySelector('ytd-channel-name a');
+    if (channelLinkElement?.href) {
+        const match = channelLinkElement.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
+        if (match) return match[2];
     }
-});
 
-browser.storage.local.get(["chatBegoneEnabled", "chatBegoneConfig"]).then((stored) => {
-    isEnabled = stored.chatBegoneEnabled === true;
+    const metaTag = document.querySelector('link[itemprop="url"][href*="youtube.com"]');
+    if (metaTag?.href) {
+        const match = metaTag.href.match(/\/(channel|c|user|@)\/([^/?]+)/);
+        if (match) return match[2];
+    }
 
-    if (stored.chatBegoneConfig) {
-        config = stored.chatBegoneConfig;
+    return null;
+}
+
+// Check if current channel is in allowlist
+async function updateStateFromStorage() {
+    currentChannelId = getCurrentChannelId();
+    if (!currentChannelId) {
+        isEnabled = false;
+        return;
+    }
+
+    const stored = await browser.storage.local.get("chatBegoneChannels");
+    const channels = stored.chatBegoneChannels || {};
+
+    // If channel is present in storage, it is enabled (Allowlist behavior)
+    if (channels[currentChannelId]) {
+        isEnabled = true;
+        // Optionally load specific config if we stored it
+        if (channels[currentChannelId].config) {
+            config = channels[currentChannelId].config;
+        }
+    } else {
+        isEnabled = false;
     }
 
     if (isEnabled) {
         startWatchdog();
+    } else {
+        cleanup();
     }
-}).catch((err) => {
-    console.error("Chat Begone: Error loading settings:", err);
+}
+
+browser.runtime.onMessage.addListener((message) => {
+    if (message.action === "toggleState") {
+        // Optimistic update from popup
+        if (message.channelId === currentChannelId) {
+            isEnabled = message.isEnabled;
+            if (!isEnabled) {
+                cleanup();
+            } else {
+                startWatchdog();
+            }
+        }
+    }
 });
+
+// Initial load
+updateStateFromStorage().catch(console.error);
+
+// Re-check on navigation (YouTube is SPA)
+setInterval(() => {
+    const newChannelId = getCurrentChannelId();
+    if (newChannelId !== currentChannelId) {
+        updateStateFromStorage();
+    }
+}, 2000);
 
 function updateBoxPosition() {
     if (!isEnabled) return;
